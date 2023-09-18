@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" />
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+			
+			.q1 {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				position: absolute;
+				top: 0;
+				left: 0;
+				-webkit-user-drag: none;
+				z-index: -1;
+			}
+			body {
+				height: 100vh;
+				background-color: black;
+			}
+			
+			.text {
+				position: absolute;
+				z-index: 9999999;
+				font-weight: bold;
+				user-select: none;
+			}
+			
+			@keyframes remove {
+				100% {
+					opacity: 0;
+				}
+			}
+			
+			canvas {
+				display: compact;
+				margin-top: -200 px;
+				position: relative;
+				z-index: -1;
+			}
+			
+			.barrage-container-wrap {
+				width: 100%;
+				z-index: 1;
+				height: 10px;
+				position: relative;
+				overflow: hidden;
+				background: url('./img/bg.jpg') no-repeat;
+				background-size: 100% 100%;
+			}
+			
+			.barrage-container {
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				bottom: 30px;
+				cursor: default;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+			
+			.barrage-item {
+				position: absolute;
+				top: 0;
+				left: 100%;
+				white-space: nowrap;
+				cursor: pointer;
+				color: #fff;
+			}
+			
+			.barrage-item .barrage-tip {
+				display: none;
+				position: absolute;
+				top: -26px;
+				padding: 7px 15px;
+				line-height: 12px;
+				font-size: 12px;
+				color: #f20606;
+				background-color: #fff;
+				white-space: nowrap;
+				border: 1px solid #ddd;
+				border-radius: 8px;
+				-webkit-box-shadow: 0 0 10px 1px rgba(0, 0, 0, .1);
+				box-shadow: 0 0 10px 1px rgba(0, 0, 0, .1);
+				-webkit-transform-origin: 15px 100%;
+				-ms-transform-origin: 15px 100%;
+				transform-origin: 15px 100%;
+				webkit-animation: tipScale cubic-bezier(.22, .58, .12, .98) .4s;
+				animation: tipScale cubic-bezier(.22, .58, .12, .98) .4s;
+			}
+			
+			.send-wrap {
+				margin-top: 20px;
+			}
+			
+			.input {
+				width: 300px;
+				height: 30px;
+				line-height: 30px;
+				outline: none;
+				-webkit-appearance: none;
+				border-radius: 5px;
+				padding: 0;
+				padding-left: 10px;
+			}
+			
+			.send-btn {
+				height: 38px;
+				line-height: 38px;
+				text-align: center;
+				font-weight: bold;
+				color: #fff;
+				background: #93d0ea;
+				text-shadow: 1px 1px 1px #333;
+				border-radius: 5px;
+				margin: 0 20px 20px 0;
+				position: relative;
+				overflow: hidden;
+				cursor: pointer;
+				padding: 5px 15px;
+			}
+			
+			@-webkit-keyframes tipScale {
+				0 {
+					-webkit-transform: scale(0);
+					transform: scale(0);
+				}
+				50% {
+					-webkit-transform: scale(1.1);
+					transform: scale(1.1);
+				}
+				100% {
+					-webkit-transform: scale(1);
+					transform: scale(1);
+				}
+			}
+			.login{
+				position: absolute;
+				left: 750px;
+				top: 950px;
+			}
+			.bu{
+				position: absolute;
+				margin-left: 170px;
+			    margin-top:-23px;
+				width: 50px;
+				height: 20px;
+			}
+			.text1{
+				bottom: 10px;
+			}
+		</style>
+	</head>
+
+	<body>
+		<audio preload id='music'>
+			<source src="js/1.ogg">
+		</audio>
+		<a href="javascript:playPause()"><button>播放</button></a>
+		<div class="barrage-container-wrap clearfix">
+			<div class="barrage-container">
+			</div>
+		</div>
+		<div class="send-wrap">
+		</div>
+		<img class="q1" src="img/1.png"></img>
+		<canvas></canvas>
+		<div id="container" class="container">
+		</div>
+
+		<div class="login">
+			<div class="text1">
+				<i class="fa fa-user-o" aria-hidden="true"></i>
+				<input type="Username" placeholder="用户" id="name">
+			</div>
+			<div class="text2">
+				<i class="fa fa-lock" aria-hidden="true"></i>
+				<input type="Password" placeholder="密码" id="pass">
+			</div>
+			<button class="bu" onclick="login()">登录</button>
+		</div>
+
+		<script>
+			function login() {
+				var username = document.getElementById("name").value;
+				var password = document.getElementById("pass").value;
+				if(username == "依崽" && password == "yizailhx") {
+					alert("登录成功");
+					window.location.href = "相册.html";
+					return false;
+				} else {
+					alert("账号或密码错误");
+					return false;
+				}
+			}
+		</script>
+
+		<script>
+			var canvas = document.querySelector("canvas");
+			var ctx = canvas.getContext("2d");
+
+			var ww = window.innerWidth;
+			var wh = window.innerHeight;
+
+			var hearts = [];
+
+			function init() {
+				requestAnimationFrame(render);
+				canvas.width = ww;
+				canvas.height = wh;
+				for(var i = 0; i < 100; i++) {
+					hearts.push(new Heart());
+				}
+			}
+
+			function Heart() {
+				this.x = Math.random() * ww;
+				this.y = Math.random() * wh;
+				this.opacity = (Math.random() * 0.5) + 0.5;
+				this.vel = {
+					x: (Math.random() - 0.5) * 4,
+					y: (Math.random() - 0.5) * 4
+				};
+				this.targetScale = (Math.random() * 0.15) + 0.02;
+				this.scale = this.targetScale * Math.random();
+			}
+
+			Heart.prototype.update = function() {
+				this.x += this.vel.x;
+				this.y += this.vel.y;
+
+				this.scale += (this.targetScale - this.scale) * 0.01;
+				if(this.x - this.width > ww || this.x + this.width < 0) {
+					this.scale = 0;
+					this.x = Math.random() * ww;
+				}
+				if(this.y - this.height > wh || this.y + this.height < 0) {
+					this.scale = 0;
+					this.y = Math.random() * wh;
+				}
+				this.width = 473.8 * this.scale;
+				this.height = 408.6 * this.scale;
+			}
+			Heart.prototype.draw = function() {
+				ctx.globalAlpha = this.opacity;
+				ctx.drawImage(heartImage, this.x - this.width * 0.5, this.y - this.height * 0.5, this.width, this.height);
+			}
+
+			function render() {
+				ctx.clearRect(0, 0, ww, wh);
+				// ctx.globalAlpha = 1;
+				// ctx.fillStyle = "rgba(255,255,255,0.3)";
+				// ctx.fillRect(0, 0, ww, wh);
+				for(var i = 0; i < 100; i++) {
+					hearts[i].update();
+					hearts[i].draw();
+				}
+				requestAnimationFrame(render);
+			}
+
+			var heartImage = new Image();
+			heartImage.onload = init();
+			heartImage.src = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0NzMuOHB4IiBoZWlnaHQ9IjQwOC42cHgiIHZpZXdCb3g9IjAgMCA0NzMuOCA0MDguNiI+PHBhdGggZmlsbD0iI2QzMjkzMiIgZD0iTTQwNC42LDE2LjZDMzg1LjQsNi4xLDM2My41LDAsMzQwLDBjLTQxLjUsMC03OC41LDE4LjktMTAzLDQ4LjVDMjEyLjMsMTguOSwxNzUuMywwLDEzMy44LDAgYy0yMy4zLDAtNDUuMyw2LjEtNjQuNSwxNi42QzI3LjksMzkuNSwwLDgzLjQsMCwxMzMuOWMwLDE0LjQsMi40LDI4LjMsNi42LDQxLjJDMjkuNiwyNzguNCwyMzcsNDA4LjYsMjM3LDQwOC42IHMyMDcuMi0xMzAuMiwyMzAuMi0yMzMuNWM0LjMtMTIuOSw2LjYtMjYuOCw2LjYtNDEuMkM0NzMuOCw4My40LDQ0NS45LDM5LjYsNDA0LjYsMTYuNnoiLz48L3N2Zz4=";
+
+			window.addEventListener("resize", function() {
+				ww = window.innerWidth;
+				wh = window.innerHeight;
+			})
+		</script>
+	</body>
+	<script>
+		window.addEventListener('load', function() {
+			let body = document.body;
+			let content = ["❤去活出你自己。❤", "❤《日不落》❤", "❤《一格格》❤", "❤《森林巴士》❤", "❤《爱就一个字》❤",
+				"❤《星辰大海》❤", "❤《千千万万》❤", "❤《我在等》❤", "❤《如一》❤", "❤《收敛》❤", "❤《间距》❤", "❤《早点早点》❤",
+				"❤《阿拉斯加海湾》❤", "❤《Peace&Love》❤", "❤《灰色》❤", "❤《带你回家》❤", "❤《等我回家》❤", "❤《0919》❤",
+				"❤《我很好》❤", "❤《会不会》❤", "❤《经济舱》❤", "❤《我走后》❤", "❤《不删》❤", "❤《Girls》❤",
+				"❤《Let Her Go》❤", "❤《关于你的梦》❤", "❤《慢慢》❤", "❤《下雨天》❤", "❤《翅膀》❤", "❤《靠近一点》❤",
+				"❤《翅膀》❤", "❤《This Is Love》❤", "❤《重来》❤", "❤《晴天》❤", "❤《空白格》❤", "❤《爱你3000》❤",
+				"❤《下落不明》❤", "❤《我要》❤", "❤《晚星》❤", "❤《你，好不好？》❤", "❤《50 Feet》❤", "❤《COCO》❤",
+				"❤《NUMB》❤", "❤《重演》❤", "❤《所念皆星河》❤"
+			] //自定义内容的数组
+			body.addEventListener('click', function(e) {
+				let x = e.pageX;
+				let y = e.pageY; //当前坐标
+				let randContent = Math.ceil(Math.random() * content.length);
+				let text = new Text(x, y, randContent);
+				let span = document.createElement('span')
+				span.style.color = text.getRandom();
+				text.create(span);
+				setTimeout(function() {
+					text.out(span)
+				}, 1900)
+			})
+
+			function Text(x, y, rand) {
+				this.x = x;
+				this.y = y;
+				this.rand = rand;
+			}
+			Text.prototype.create = function(_this) {
+				let body = document.body;
+				_this.innerHTML = content[this.rand - 1];
+				_this.className = 'text'
+				_this.style.top = this.y - 20 + 'px'
+				_this.style.left = this.x - 50 + 'px'
+				_this.style.animation = 'remove 2s'
+				body.appendChild(_this);
+				let i = 0
+				setInterval(() => {
+					_this.style.top = this.y - 20 - i + 'px'
+					i++
+				}, 10);
+			}
+			Text.prototype.out = function(_this) {
+				_this.remove()
+			}
+			//设置随机颜色
+			Text.prototype.getRandom = function() {
+				let allType = '0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f'; //16进制颜色
+				let allTypeArr = allType.split(','); //通过','分割为数组
+				let color = '#';
+				for(var i = 0; i < 6; i++) {
+					//随机生成一个0-16的数
+					var random = parseInt(Math.random() * allTypeArr.length);
+					color += allTypeArr[random];
+				}
+				return color; //返回随机生成的颜色
+			}
+		})
+
+		//兼容写法
+		(function() {
+			var lastTime = 0;
+			var vendors = ['webkit', 'moz'];
+			for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+				window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+				window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || // Webkit中此取消方法的名字变了
+					window[vendors[x] + 'CancelRequestAnimationFrame'];
+			}
+
+			if(!window.requestAnimationFrame) {
+				window.requestAnimationFrame = function(callback, element) {
+					var currTime = new Date().getTime();
+					var timeToCall = Math.max(0, 16.7 - (currTime - lastTime));
+					var id = window.setTimeout(function() {
+						callback(currTime + timeToCall);
+					}, timeToCall);
+					lastTime = currTime + timeToCall;
+					return id;
+				};
+			}
+			if(!window.cancelAnimationFrame) {
+				window.cancelAnimationFrame = function(id) {
+					clearTimeout(id);
+				};
+			}
+		}());
+
+		function playPause() {
+			var music = document.getElementById('music');
+			var music_btn = document.getElementById('music-btn');
+			if(music.paused) {
+				music.play();
+				music_btn.src = 'pause.png';
+			} else {
+				music.pause();
+				music_btn.src = 'play.png';
+			}
+		} //播放和暂停合一，默认是打开页面点击播放，点击后播放键就会变为暂停键
+		//这里只是我想二合一，其实可以分开的，原理一样，把两个判断分到两个按钮，写两个function就ok啦
+		var music1 = new Array();
+		music1 = ["js/1.ogg"]; //用数组存储所有歌曲的路径
+		//如果是本地的音乐，就写本地的路径，如果你使用了云存储，就把url放在这里就好了
+		var num = 0;
+		var n = music1.length; //获取数组的长度
+		function lastmusic() {
+			num = (num + n - 1) % n;
+			music.src = music1[num];
+			music.play();
+		} //切上一首歌
+		function nextmusic() {
+			num = (num + 1) % n;
+			music.src = music1[num];
+			music.play();
+		} //切下一首歌
+		window.onload = function() {
+			music.addEventListener('ended', function() {
+				nextmusic();
+			}, false)
+		} //自动连播功能，监听播放情况，结束之后就调用下一首歌的函数
+	</script>
+
+</html>
